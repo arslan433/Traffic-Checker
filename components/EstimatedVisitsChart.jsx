@@ -4,8 +4,15 @@ import HighchartsReact from "highcharts-react-official";
 
 export default function EstimatedVisitsChart({ visitsData }) {
 
-  const categories = Object.keys(visitsData || {});
-  const values = Object.values(visitsData || {});
+  const categories = Object.keys(visitsData || {}).map(date => {
+    const d = new Date(date);
+    return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  });
+
+  const values = Object.entries(visitsData || {}).map(([date, value]) => {
+    const label = new Date(date).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+    return { name: label, y: value };
+  });
 
   const options = {
     chart: {
@@ -18,8 +25,8 @@ export default function EstimatedVisitsChart({ visitsData }) {
       style: { color: "#facc15", fontSize: "18px" },
     },
     xAxis: {
-      categories,
-      labels: { style: { color: "#e2e8f0" } },
+      type: 'category',
+      labels: { style: { color: "#e2e8f0" } }
     },
     yAxis: {
       title: { text: "Visits", style: { color: "#e2e8f0" } },
@@ -36,8 +43,8 @@ export default function EstimatedVisitsChart({ visitsData }) {
     series: [
       {
         name: "Visits",
-        data: values,
-        color: "#3b82f6",
+        data: values, // now contains { name, y }
+        color: "#3b8",
         marker: { enabled: true, radius: 4 },
       },
     ],
@@ -45,18 +52,25 @@ export default function EstimatedVisitsChart({ visitsData }) {
       backgroundColor: "#1e293b",
       style: { color: "#f1f5f9" },
       formatter: function () {
-        let val = this.y;
-        if (val >= 1_000_000) val = (val / 1_000_000).toFixed(1) + "M";
-        else if (val >= 1_000) val = (val / 1_000).toFixed(0) + "k";
-        return `<b>${this.x}</b>: ${val}`;
-      },
-    },
-    credits: { enabled: false },
-  };
 
-  return (
-    <div className="bg-slate-800 p-4 rounded-lg border border-slate-700">
-      <HighchartsReact highcharts={Highcharts} options={options} />
-    </div>
+        let val = this.y;
+        if (val >= 1_000_000_000) {
+          val = (val / 1_000_000_000).toFixed(1) + "B";
+        } else if (val >= 1_000_000) {
+          val = (val / 1_000_000).toFixed(1) + "M";
+        } else if (val >= 1_000) {
+          val = (val / 1_000).toFixed(0) + "k";
+        }
+          return `<b>${this.point.name}</b>: ${val}`;
+        }
+      },
+
+      credits: { enabled: false },
+    };
+
+    return(
+    <div className = "bg-slate-800 p-4 rounded-lg border border-slate-700" >
+        <HighchartsReact highcharts={Highcharts} options={options} />
+    </div >
   );
 }

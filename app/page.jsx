@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import EstimatedVisitsChart from '@/components/EstimatedVisitsChart'
+import TopCountriesChart from '@/components/TopCountriesChart'
+
 export default function FullTrafficDashboard() {
   const [domain, setDomain] = useState("");
   const [data, setData] = useState(null);
@@ -34,11 +36,26 @@ export default function FullTrafficDashboard() {
     }
   };
 
+  function formatTime(seconds) {
+    if (!seconds || isNaN(seconds)) return "-";
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+  }
+
+  function formatNumber(val) {
+    if (val >= 1_000_000_000) return (val / 1_000_000_000).toFixed(1) + "B";
+    if (val >= 1_000_000) return (val / 1_000_000).toFixed(1) + "M";
+    if (val >= 1_000) return (val / 1_000).toFixed(0) + "k";
+    return val?.toString() || "-";
+  }
+
+
   return (
     <div className="bg-slate-900 text-slate-100 min-h-screen p-6">
       <div className="justify-items-center">
 
-        <h1 className="text-3xl font-bold mb-6">Full Traffic Dashboard</h1>
+        <h1 className="text-3xl font-bold mb-6">Ar Website Traffic Checker</h1>
 
         <div className="flex gap-3 max-w-xl mb-6 align-center">
           <input
@@ -57,7 +74,7 @@ export default function FullTrafficDashboard() {
         </div>
       </div>
 
-      {loading && <p className="text-slate-400">Loading traffic data...</p>}
+      {loading && <p className="text-slate-400 text-center">Loading traffic data...</p>}
       {error && <p className="text-red-500">{error}</p>}
 
       {data && (
@@ -78,10 +95,17 @@ export default function FullTrafficDashboard() {
           <section>
             <h2 className="text-xl font-semibold text-amber-400 mb-2">Engagement</h2>
             <ul className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <Metric label="Monthly Visits" value={data.Engagments?.Visits} />
+              <Metric
+                label="Monthly Visits"
+                value={formatNumber(data.Engagments?.Visits)}
+              />
+
               <Metric label="Bounce Rate" value={`${(parseFloat(data.Engagments?.BounceRate) * 100).toFixed(1)}%`} />
               <Metric label="Pages / Visit" value={parseFloat(data.Engagments?.PagePerVisit).toFixed(2)} />
-              <Metric label="Avg Time on Site" value={`${Math.floor(data.Engagments?.TimeOnSite)}s`} />
+              <Metric
+                label="Avg Time on Site"
+                value={formatTime(data.Engagments?.TimeOnSite)}
+              />
               <Metric label="Month" value={data.Engagments?.Month} />
               <Metric label="Year" value={data.Engagments?.Year} />
             </ul>
@@ -98,15 +122,8 @@ export default function FullTrafficDashboard() {
           </section>
 
           {/* Estimated Monthly Visits */}
-          <section>
-            <h2 className="text-xl font-semibold text-amber-400 mb-2">Estimated Monthly Visits</h2>
-            <ul className="space-y-1">
-              {Object.entries(data.EstimatedMonthlyVisits || {}).map(([date, visits], i) => (
-                <li key={i}><strong>{date}:</strong> {visits.toLocaleString()}</li>
-              ))}
-            </ul>
-          </section>
           <EstimatedVisitsChart visitsData={data.EstimatedMonthlyVisits} />
+
           {/* Traffic Sources */}
           <section>
             <h2 className="text-xl font-semibold text-amber-400 mb-2">Traffic Sources</h2>
@@ -118,16 +135,8 @@ export default function FullTrafficDashboard() {
           </section>
 
           {/* Top Countries */}
-          <section>
-            <h2 className="text-xl font-semibold text-amber-400 mb-2">Top Countries</h2>
-            <ul className="space-y-1">
-              {data.TopCountryShares?.map((c, i) => (
-                <li key={i}>
-                  <strong>{c.CountryCode}:</strong> {(c.Value * 100).toFixed(2)}%
-                </li>
-              ))}
-            </ul>
-          </section>
+          <TopCountriesChart countries={data.TopCountryShares} />
+
 
           {/* Top Keywords */}
           <section>
