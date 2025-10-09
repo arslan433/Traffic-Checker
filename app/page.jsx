@@ -55,7 +55,7 @@ export default function FullTrafficDashboard() {
     <div className="bg-slate-900 text-slate-100 min-h-screen p-6">
       <div className="justify-items-center">
 
-        <h1 className="text-3xl font-bold mb-6">Ar Website Traffic Checker</h1>
+        <h1 className="text-3xl font-bold mb-6">Website Traffic Checker</h1>
 
         <div className="flex gap-3 max-w-xl mb-6 align-center">
           <input
