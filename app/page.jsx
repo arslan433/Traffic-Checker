@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import EstimatedVisitsChart from '@/components/EstimatedVisitsChart'
-import TopCountriesChart from '@/components/TopCountriesChart'
+import TopCountries from '@/components/TopCountriesChart'
 import SiteInfo from '@/components/SiteInfo'
 import Ranks from '@/components/Ranks'
 
@@ -105,8 +105,8 @@ export default function FullTrafficDashboard() {
           </section>
 
           {/* Ranks */}
-          <Ranks data={data}/>
-         
+          <Ranks data={data} />
+
 
           {/* Estimated Monthly Visits */}
           <EstimatedVisitsChart visitsData={data.EstimatedMonthlyVisits} />
@@ -122,7 +122,11 @@ export default function FullTrafficDashboard() {
           </section>
 
           {/* Top Countries */}
-          <TopCountriesChart countries={data.TopCountryShares} />
+          <TopCountries
+            countries={data.Countries}
+            topCountryShares={data.TopCountryShares}
+          />
+
 
 
           {/* Top Keywords */}

@@ -3,20 +3,25 @@ import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 
 function getRandomColors(count) {
-  const colors = [];
-  for (let i = 0; i < count; i++) {
-    const color = "#" + Math.floor(Math.random() * 16777215).toString(16);
-    colors.push(color);
-  }
-  return colors;
+  return Array.from({ length: count }, () =>
+    "#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, "0")
+  );
 }
 
-export default function TopCountriesVerticalChart({ countries }) {
-  const top5 = (countries || []).slice(0, 5).map(c => ({
-    name: c.CountryCode,
-    y: +(c.Value * 100).toFixed(2),
-  }));
 
+
+function mapCountrySharesWithNames(topShares, countries) {
+  return (topShares || []).map(c => {
+    const match = (countries || []).find(cc => cc.Code === c.CountryCode);
+    return {
+      name: match ? match.Name : c.CountryCode,
+      y: +(c.Value * 100).toFixed(2),
+    };
+  });
+}
+
+export default function TopCountries({ countries, topCountryShares }) {
+  const top5 = mapCountrySharesWithNames(topCountryShares, countries);
 
   const options = {
     chart: {
@@ -30,15 +35,11 @@ export default function TopCountriesVerticalChart({ countries }) {
     },
     xAxis: {
       categories: top5.map(c => c.name),
-      title: { text: null },
       labels: { style: { color: "#e2e8f0" } },
     },
     yAxis: {
       min: 0,
-      title: {
-        text: "Traffic Share (%)",
-        style: { color: "#e2e8f0" },
-      },
+      title: { text: "Traffic Share (%)", style: { color: "#e2e8f0" } },
       labels: {
         style: { color: "#94a3b8" },
         formatter: function () {
@@ -51,21 +52,20 @@ export default function TopCountriesVerticalChart({ countries }) {
     tooltip: {
       backgroundColor: "#1e293b",
       style: { color: "#f1f5f9" },
-      pointFormat: "<b>{point.y:.2f}%</b> traffic share",
+      formatter: function () {
+        return `<b>${this.point.name}</b>: ${this.y.toFixed(2)}% `;
+      },
     },
     series: [
       {
         name: "Traffic Share",
         data: top5,
         colorByPoint: true,
-       colors: getRandomColors(top5.length), 
+        colors: getRandomColors(top5.length),
         dataLabels: {
           enabled: true,
           format: "{point.y:.2f}%",
-          style: {
-            color: "#f1f5f9",
-            fontWeight: "bold",
-          },
+          style: { color: "#f1f5f9", fontWeight: "bold" },
         },
       },
     ],
