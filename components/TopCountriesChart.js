@@ -2,11 +2,21 @@
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 
+function getRandomColors(count) {
+  const colors = [];
+  for (let i = 0; i < count; i++) {
+    const color = "#" + Math.floor(Math.random() * 16777215).toString(16);
+    colors.push(color);
+  }
+  return colors;
+}
+
 export default function TopCountriesVerticalChart({ countries }) {
   const top5 = (countries || []).slice(0, 5).map(c => ({
     name: c.CountryCode,
     y: +(c.Value * 100).toFixed(2),
   }));
+
 
   const options = {
     chart: {
@@ -48,7 +58,7 @@ export default function TopCountriesVerticalChart({ countries }) {
         name: "Traffic Share",
         data: top5,
         colorByPoint: true,
-        colors: ["#9beb34", "#f59e0b", "#10b981", "#3b82f6", "#8b5cf6"],
+       colors: getRandomColors(top5.length), 
         dataLabels: {
           enabled: true,
           format: "{point.y:.2f}%",

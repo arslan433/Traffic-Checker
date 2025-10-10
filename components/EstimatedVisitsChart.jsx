@@ -4,10 +4,6 @@ import HighchartsReact from "highcharts-react-official";
 
 export default function EstimatedVisitsChart({ visitsData }) {
 
-  const categories = Object.keys(visitsData || {}).map(date => {
-    const d = new Date(date);
-    return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
-  });
 
   const values = Object.entries(visitsData || {}).map(([date, value]) => {
     const label = new Date(date).toLocaleDateString("en-US", { month: "long", year: "numeric" });
@@ -43,7 +39,7 @@ export default function EstimatedVisitsChart({ visitsData }) {
     series: [
       {
         name: "Visits",
-        data: values, // now contains { name, y }
+        data: values, 
         color: "#3b8",
         marker: { enabled: true, radius: 4 },
       },

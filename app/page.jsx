@@ -2,6 +2,7 @@
 import { useState } from "react";
 import EstimatedVisitsChart from '@/components/EstimatedVisitsChart'
 import TopCountriesChart from '@/components/TopCountriesChart'
+import SiteInfo from '@/components/SiteInfo'
 
 export default function FullTrafficDashboard() {
   const [domain, setDomain] = useState("");
@@ -27,6 +28,7 @@ export default function FullTrafficDashboard() {
     try {
       const response = await fetch(url, options);
       const result = await response.json();
+      console.log(result)
       setData(result);
     } catch (err) {
       console.error("API Error:", err);
@@ -74,22 +76,14 @@ export default function FullTrafficDashboard() {
         </div>
       </div>
 
-      {loading && <p className="text-slate-400 text-center">Loading traffic data...</p>}
+      {loading && <p className="text-slate-300 text-center">Loading traffic data...</p>}
       {error && <p className="text-red-500">{error}</p>}
 
       {data && (
         <div className="space-y-10 max-w-5xl mx-auto">
           {/* Site Info */}
-          <section>
-            <h2 className="text-xl font-semibold text-amber-400 mb-2">Site Info</h2>
-            <ul className="space-y-1">
-              <li><strong>Site Name:</strong> {data.SiteName}</li>
-              <li><strong>Description:</strong> {data.Description}</li>
-              <li><strong>Category:</strong> {data.Category}</li>
-              <li><strong>Snapshot Date:</strong> {data.SnapshotDate}</li>
-              <li><strong>Title:</strong> {data.Title}</li>
-            </ul>
-          </section>
+         <SiteInfo data={data}/>
+
 
           {/* Engagement */}
           <section>
@@ -115,9 +109,20 @@ export default function FullTrafficDashboard() {
           <section>
             <h2 className="text-xl font-semibold text-amber-400 mb-2">Ranks</h2>
             <ul className="space-y-1">
-              <li><strong>Global Rank:</strong> #{data.GlobalRank?.Rank}</li>
-              <li><strong>Country Rank:</strong> #{data.CountryRank?.Rank} ({data.CountryRank?.CountryCode})</li>
-              <li><strong>Category Rank:</strong> #{data.CategoryRank?.Rank}</li>
+              <li>
+                <strong>Global Rank:</strong>{" "}
+                {data.GlobalRank?.Rank ? `#${data.GlobalRank.Rank}` : "N/A"}
+              </li>
+              <li>
+                <strong>Country Rank:</strong>{" "}
+                {data.CountryRank?.Rank
+                  ? `#${data.CountryRank.Rank} (${data.CountryRank.CountryCode || "-"})`
+                  : "N/A"}
+              </li>
+              <li>
+                <strong>Category Rank:</strong>{" "}
+                {data.CategoryRank?.Rank ? `#${data.CategoryRank.Rank}` : "N/A"}
+              </li>
             </ul>
           </section>
 
@@ -153,13 +158,26 @@ export default function FullTrafficDashboard() {
               <tbody>
                 {data.TopKeywords?.map((k, i) => (
                   <tr key={i} className="border-t border-slate-700">
-                    <td className="p-2">{k.Name}</td>
-                    <td className="p-2 text-right">{k.Volume.toLocaleString()}</td>
-                    <td className="p-2 text-right">{k.Cpc ? `$${k.Cpc.toFixed(2)}` : "-"}</td>
-                    <td className="p-2 text-right">${k.EstimatedValue.toFixed(2)}</td>
+                    <td className="p-2">{k?.Name || "-"}</td>
+
+                    {/* Volume */}
+                    <td className="p-2 text-right">
+                      {k?.Volume != null ? k.Volume.toLocaleString() : "-"}
+                    </td>
+
+                    {/* CPC */}
+                    <td className="p-2 text-right">
+                      {k?.Cpc != null ? `$${Number(k.Cpc).toFixed(2)}` : "-"}
+                    </td>
+
+                    {/* Estimated Value */}
+                    <td className="p-2 text-right">
+                      {k?.EstimatedValue != null ? `$${Number(k.EstimatedValue).toFixed(2)}` : "-"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
+
             </table>
           </section>
 
