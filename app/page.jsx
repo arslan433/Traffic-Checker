@@ -3,6 +3,7 @@ import { useState } from "react";
 import EstimatedVisitsChart from '@/components/EstimatedVisitsChart'
 import TopCountriesChart from '@/components/TopCountriesChart'
 import SiteInfo from '@/components/SiteInfo'
+import Ranks from '@/components/Ranks'
 
 export default function FullTrafficDashboard() {
   const [domain, setDomain] = useState("");
@@ -82,9 +83,7 @@ export default function FullTrafficDashboard() {
       {data && (
         <div className="space-y-10 max-w-5xl mx-auto">
           {/* Site Info */}
-         <SiteInfo data={data}/>
-
-
+          <SiteInfo data={data} />
           {/* Engagement */}
           <section>
             <h2 className="text-xl font-semibold text-amber-400 mb-2">Engagement</h2>
@@ -106,25 +105,8 @@ export default function FullTrafficDashboard() {
           </section>
 
           {/* Ranks */}
-          <section>
-            <h2 className="text-xl font-semibold text-amber-400 mb-2">Ranks</h2>
-            <ul className="space-y-1">
-              <li>
-                <strong>Global Rank:</strong>{" "}
-                {data.GlobalRank?.Rank ? `#${data.GlobalRank.Rank}` : "N/A"}
-              </li>
-              <li>
-                <strong>Country Rank:</strong>{" "}
-                {data.CountryRank?.Rank
-                  ? `#${data.CountryRank.Rank} (${data.CountryRank.CountryCode || "-"})`
-                  : "N/A"}
-              </li>
-              <li>
-                <strong>Category Rank:</strong>{" "}
-                {data.CategoryRank?.Rank ? `#${data.CategoryRank.Rank}` : "N/A"}
-              </li>
-            </ul>
-          </section>
+          <Ranks data={data}/>
+         
 
           {/* Estimated Monthly Visits */}
           <EstimatedVisitsChart visitsData={data.EstimatedMonthlyVisits} />

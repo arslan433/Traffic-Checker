@@ -1,6 +1,17 @@
 import { Link, Info, Grid, Calendar, Tag } from "lucide-react";
 
 export default function SiteInfo({ data }) {
+  function formatCategory(cat) {
+  if (!cat) return "N/A";
+  return cat
+    .split("/")
+    .map(c =>
+      c.replace(/_/g, " ")
+       .replace(/\b\w/g, l => l.toUpperCase())
+    )
+    .join(" › ");
+}
+
   return (
     <section className="bg-slate-800 p-4 rounded-lg border border-slate-700">
       <h2 className="text-xl font-semibold text-amber-400 mb-4 flex items-center gap-2">
@@ -35,7 +46,7 @@ export default function SiteInfo({ data }) {
           </span>
           <div>
             <p className="text-sm text-slate-400">Category</p>
-            <p className="font-medium">{data.Category}</p>
+          <p className="font-medium">{formatCategory(data.Category)}</p>
           </div>
         </li>
 
