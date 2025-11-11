@@ -37,4 +37,4 @@ Tech Stack
  Clone the Repository
 ```bash
 git clone https://github.com/arslan433/Traffic-Checker.git
-cd <repo-name>
+cd Traffic-Checker
