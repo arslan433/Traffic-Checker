@@ -14,7 +14,7 @@ export async function GET(request) {
     const options = {
       method: 'POST', // The external API requires POST
       headers: {
-        'x-rapidapi-key': process.env.RAPIDAPI_KEY || '727b64d020mshaeb7d23253d9d8ap1433edjsn34f70c3f9a7a',
+        'x-rapidapi-key': process.env.RAPIDAPI_KEY ,
         'x-rapidapi-host': process.env.RAPIDAPI_HOST || 'similarweb-api1.p.rapidapi.com',
         'Content-Type': 'application/json'
       },
