@@ -17,23 +17,20 @@ export default function FullTrafficDashboard() {
     setError("");
     setData(null);
 
-    const url = `https://similarweb-traffic.p.rapidapi.com/traffic?domain=${domain}`;
-    const options = {
-      method: "GET",
-      headers: {
-        "x-rapidapi-key": "4b7c6d58fbmshe4fa6c2cf4656b5p1cf76djsn3c6c2ded85c6",
-        "x-rapidapi-host": "similarweb-traffic.p.rapidapi.com",
-      },
-    };
+    const url = `/api/traffic?domain=${encodeURIComponent(domain.trim())}`;
 
     try {
-      const response = await fetch(url, options);
+      const response = await fetch(url);
       const result = await response.json();
-      console.log(result)
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to fetch traffic data.");
+      }
+
       setData(result);
     } catch (err) {
-      console.error("API Error:", err);
-      setError("Failed to fetch traffic data.");
+      console.error("Client Dash Error:", err);
+      setError(err.message || "An unexpected error occurred.");
     } finally {
       setLoading(false);
     }
@@ -53,65 +50,51 @@ export default function FullTrafficDashboard() {
     return val?.toString() || "-";
   }
 
-
   return (
     <div className="bg-slate-900 text-slate-100 min-h-screen p-6">
-      <div className="justify-items-center">
-
+      <div className="flex flex-col items-center mb-8">
         <h1 className="text-3xl font-bold mb-6">Website Traffic Checker</h1>
 
-        <div className="flex gap-3 max-w-xl mb-6 align-center">
+        <div className="flex gap-3 w-full max-w-xl items-center">
           <input
             type="text"
             value={domain}
             onChange={(e) => setDomain(e.target.value)}
             placeholder="Enter domain (e.g. x.com)"
-            className="flex-1 px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            className="flex-1 px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white"
           />
           <button
             onClick={fetchTraffic}
-            className="px-5 py-2 bg-cyan-600 hover:bg-cyan-700 rounded-lg text-white"
+            disabled={loading}
+            className="px-5 py-2 bg-cyan-600 hover:bg-cyan-700 disabled:opacity-50 rounded-lg text-white font-medium transition-colors"
           >
-            Check
+            {loading ? "Checking..." : "Check"}
           </button>
         </div>
       </div>
 
-      {loading && <p className="text-slate-300 text-center">Loading traffic data...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+      {loading && <p className="text-slate-400 text-center text-lg animate-pulse">Loading traffic data...</p>}
+      {error && <p className="text-red-400 text-center bg-red-950/40 max-w-xl mx-auto p-3 rounded-lg border border-red-900/50 mb-6">{error}</p>}
 
       {data && (
         <div className="space-y-10 max-w-5xl mx-auto">
-          {/* Site Info */}
           <SiteInfo data={data} />
-          {/* Engagement */}
+          
           <section>
             <h2 className="text-xl font-semibold text-amber-400 mb-2">Engagement</h2>
             <ul className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <Metric
-                label="Monthly Visits"
-                value={formatNumber(data.Engagments?.Visits)}
-              />
-
-              <Metric label="Bounce Rate" value={`${(parseFloat(data.Engagments?.BounceRate) * 100).toFixed(1)}%`} />
-              <Metric label="Pages / Visit" value={parseFloat(data.Engagments?.PagePerVisit).toFixed(2)} />
-              <Metric
-                label="Avg Time on Site"
-                value={formatTime(data.Engagments?.TimeOnSite)}
-              />
+              <Metric label="Monthly Visits" value={formatNumber(data.Engagments?.Visits)} />
+              <Metric label="Bounce Rate" value={data.Engagments?.BounceRate ? `${(parseFloat(data.Engagments.BounceRate) * 100).toFixed(1)}%` : "-"} />
+              <Metric label="Pages / Visit" value={data.Engagments?.PagePerVisit ? parseFloat(data.Engagments.PagePerVisit).toFixed(2) : "-"} />
+              <Metric label="Avg Time on Site" value={formatTime(data.Engagments?.TimeOnSite)} />
               <Metric label="Month" value={data.Engagments?.Month} />
               <Metric label="Year" value={data.Engagments?.Year} />
             </ul>
           </section>
 
-          {/* Ranks */}
           <Ranks data={data} />
-
-
-          {/* Estimated Monthly Visits */}
           <EstimatedVisitsChart visitsData={data.EstimatedMonthlyVisits} />
 
-          {/* Traffic Sources */}
           <section>
             <h2 className="text-xl font-semibold text-amber-400 mb-2">Traffic Sources</h2>
             <ul className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -121,61 +104,38 @@ export default function FullTrafficDashboard() {
             </ul>
           </section>
 
-          {/* Top Countries */}
-          <TopCountries
-            countries={data.Countries}
-            topCountryShares={data.TopCountryShares}
-          />
+          <TopCountries countries={data.Countries} topCountryShares={data.TopCountryShares} />
 
-
-
-          {/* Top Keywords */}
           <section>
             <h2 className="text-xl font-semibold text-amber-400 mb-2">Top Keywords</h2>
-            <table className="w-full text-sm border border-slate-700">
-              <thead className="bg-slate-800 text-slate-300">
-                <tr>
-                  <th className="p-2 text-left">Keyword</th>
-                  <th className="p-2 text-right">Volume</th>
-                  <th className="p-2 text-right">CPC</th>
-                  <th className="p-2 text-right">Est. Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.TopKeywords?.map((k, i) => (
-                  <tr key={i} className="border-t border-slate-700">
-                    <td className="p-2">{k?.Name || "-"}</td>
-
-                    {/* Volume */}
-                    <td className="p-2 text-right">
-                      {k?.Volume != null ? k.Volume.toLocaleString() : "-"}
-                    </td>
-
-                    {/* CPC */}
-                    <td className="p-2 text-right">
-                      {k?.Cpc != null ? `$${Number(k.Cpc).toFixed(2)}` : "-"}
-                    </td>
-
-                    {/* Estimated Value */}
-                    <td className="p-2 text-right">
-                      {k?.EstimatedValue != null ? `$${Number(k.EstimatedValue).toFixed(2)}` : "-"}
-                    </td>
+            <div className="overflow-x-auto border border-slate-700 rounded-lg">
+              <table className="w-full text-sm">
+                <thead className="bg-slate-800 text-slate-300">
+                  <tr>
+                    <th className="p-3 text-left">Keyword</th>
+                    <th className="p-3 text-right">Volume</th>
+                    <th className="p-3 text-right">CPC</th>
+                    <th className="p-3 text-right">Est. Value</th>
                   </tr>
-                ))}
-              </tbody>
-
-            </table>
+                </thead>
+                <tbody>
+                  {data.TopKeywords?.map((k, i) => (
+                    <tr key={i} className="border-t border-slate-700 hover:bg-slate-800/50">
+                      <td className="p-3 font-medium text-slate-200">{k?.Name || "-"}</td>
+                      <td className="p-3 text-right text-slate-300">{k?.Volume != null ? k.Volume.toLocaleString() : "-"}</td>
+                      <td className="p-3 text-right text-emerald-400">{k?.Cpc != null ? `$${Number(k.Cpc).toFixed(2)}` : "-"}</td>
+                      <td className="p-3 text-right text-cyan-400">{k?.EstimatedValue != null ? `$${Number(k.EstimatedValue).toFixed(2)}` : "-"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </section>
 
-          {/* Screenshot */}
           {data.LargeScreenshot && (
             <section>
               <h2 className="text-xl font-semibold text-amber-400 mb-2">Screenshot</h2>
-              <img
-                src={data.LargeScreenshot}
-                alt="Site Screenshot"
-                className="rounded-lg border border-slate-700"
-              />
+              <img src={data.LargeScreenshot} alt="Site Screenshot" className="rounded-lg border border-slate-700 w-full h-auto object-cover max-h-[500px]" />
             </section>
           )}
         </div>
@@ -187,8 +147,8 @@ export default function FullTrafficDashboard() {
 function Metric({ label, value }) {
   return (
     <div className="bg-slate-800 p-4 rounded-lg border border-slate-700">
-      <div className="text-sm text-slate-400">{label}</div>
-      <div className="text-lg font-bold">{value || "-"}</div>
+      <div className="text-sm text-slate-400 mb-1">{label}</div>
+      <div className="text-lg font-bold text-white">{value || "-"}</div>
     </div>
   );
 }
